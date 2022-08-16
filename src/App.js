@@ -10,19 +10,18 @@ function App() {
 		}
 	};
 
-	const closeModal = ({ key }) => {
-		if (key === 'Escape') {
-			setOpen(false);
-		}
+	const closeModal = (e) => {
+		window.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') {
+				setOpen(false);
+			}
+		});
 	};
+    closeModal();
 
 	return (
 		<div className='App'>
-			<button
-				onKeyDown={(e) => closeModal(e)}
-				onClick={() => setOpen(true)}
-				className='open-modal-btn'
-			>
+			<button onClick={() => setOpen(true)} className='open-modal-btn'>
 				✨ Открыть окно
 			</button>
 			{open && (
