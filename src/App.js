@@ -1,55 +1,60 @@
-import { useState, useEffect } from 'react';
-import './App.css';
-
-import { Success } from './components/Success';
-import { Users } from './components/Users';
+import { Block } from './Block';
+import './index.scss';
+import { useState, useEffect, useRef } from 'react';
 
 function App() {
-	const [users, setUsers] = useState([]);
-	const [isLoading, setLoading] = useState(true);
-	const [searchValue, setSearchValue] = useState('');
-	const [invites, setInvites] = useState([]);
-	const [success, setSuccess] = useState(false);
+	const [fromCurrency, setFromCurrency] = useState('RUB');
+	const [toCurrency, setToCurrency] = useState('USD');
+	const [fromPrice, setFromPrice] = useState(0);
+	const [toPrice, setToPrice] = useState(1);
+
+	const ratesRef = useRef({});
 
 	useEffect(() => {
-		fetch('https://reqres.in/api/users')
+		fetch('https://cdn.cur.su/api/nbu.json')
 			.then((res) => res.json())
-			.then((json) => setUsers(json.data))
-			.catch((err) => console.warn(err))
-			.finally(() => setLoading(false));
+			.then((json) => {
+				ratesRef.current = json.rates;
+				onChangeToPrice(1);
+			})
+			.catch((err) => console.warn(err));
 	}, []);
 
-	const onChangeSearchValue = (event) => {
-		setSearchValue(event.target.value);
+	const onChangeFromPrice = (value) => {
+		const price = value / ratesRef.current[fromCurrency];
+		const result = price * ratesRef.current[toCurrency];
+		setFromPrice(value);
+		setToPrice(result.toFixed(2));
+	};
+	const onChangeToPrice = (value) => {
+		const result =
+			(ratesRef.current[fromCurrency] / ratesRef.current[toCurrency]) * value;
+		setFromPrice(result.toFixed(2));
+		setToPrice(value);
 	};
 
-	const onClickInvite = (id) => {
-		if (invites.includes(id)) {
-			setInvites((prev) => prev.filter((_id) => _id !== id));
-		} else {
-			setInvites((prev) => [...prev, id]);
-		}
-	};
+	useEffect(() => {
+		onChangeFromPrice(fromPrice);
+	}, [fromCurrency]);
 
-    const onClickSentInvetes = () => {
-        setSuccess(true)
-    }
+	useEffect(() => {
+		onChangeToPrice(toPrice);
+	}, [toCurrency]);
 
 	return (
 		<div className='App'>
-			{success ? (
-				<Success count={invites.length}/>
-			) : (
-				<Users
-					onChangeSearchValue={onChangeSearchValue}
-					searchValue={searchValue}
-					items={users}
-					isLoading={isLoading}
-					invites={invites}
-					onClickInvite={onClickInvite}
-					onClickSentInvetes={onClickSentInvetes}
-				/>
-			)}
+			<Block
+				value={fromPrice}
+				currency={fromCurrency}
+				onChangeCurrency={setFromCurrency}
+				onChangeValue={onChangeFromPrice}
+			/>
+			<Block
+				value={toPrice}
+				currency={toCurrency}
+				onChangeCurrency={setToCurrency}
+				onChangeValue={onChangeToPrice}
+			/>
 		</div>
 	);
 }
