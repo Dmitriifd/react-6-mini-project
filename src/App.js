@@ -23,7 +23,7 @@ function App() {
 		const category = categoryId ? `category=${categoryId}` : '';
 
 		fetch(
-			`https://628a7538e5e5a9ad3224ddfd.mockapi.io/photos?page=${page}&limit=3&${category}`
+			`https://628a7538e5e5a9ad3224ddfd.mockapi.io/photos?page=${page}&limit=6&${category}`
 		)
 			.then((res) => res.json())
 			.then((json) => setCollections(json))
